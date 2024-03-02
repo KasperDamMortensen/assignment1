@@ -1,0 +1,38 @@
+#include "linux/kernel.h"
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+#include "arch/x86/include/generated/uapi/asm/unistd_64.h"
+
+int main(int argc, char** argv) {
+  char *in = "This is a stupid message.";
+  char msg_small[1];
+  char msg[50];
+  char *buffer_NULL = NULL;
+  int output;
+
+  output = syscall(__NR_dm510_msgbox_put, buffer_NULL, 50);
+  printf("msg_put with a NULL buffer outputs error code %d\n", output);
+
+  /* Send a message containing 'in' */
+  syscall(__NR_dm510_msgbox_put,in,strlen(in)+1);
+ /* Send a message containing 'in' */
+  syscall(__NR_dm510_msgbox_put,in,strlen(in)+1);
+
+  /* Read a message */
+
+  output = syscall(__NR_dm510_msgbox_get, msg_small, 50);
+  printf("msg_get with a too small buffer outputs error code %d\n", output);
+
+  output = syscall(__NR_dm510_msgbox_get, buffer_NULL, 50);
+  printf(" msg_get with a NULL buffer outputs error code %d\n", output);
+
+  
+  output = syscall(__NR_dm510_msgbox_get, msg, 50);
+  printf("Code for succesfull retrival from msg box: %d\n", output);
+
+  output = syscall(__NR_dm510_msgbox_get, msg, 50);
+  printf("Code for attempted retrieval from empty box: %d\n", output);
+  
+  return 0;
+}
