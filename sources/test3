@@ -1,0 +1,22 @@
+#include "linux/kernel.h"
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+#include "arch/x86/include/generated/uapi/asm/unistd_64.h"
+
+int main(int argc, char** argv) {
+  char *in = "This is a stupid message.";
+  char msg[50];
+  int output;
+
+  printf("testing with negative length\n");
+  /* Send a message containing 'in' */
+  output = syscall(__NR_dm510_msgbox_put,in,-1);
+  printf("Result is error code: %d.\n",output);
+  
+  printf("testing with too large length\n");
+  output = syscall(__NR_dm510_msgbox_put,in,129);
+  printf("Result is error code %d.\n",output);
+
+  return 0;
+}
