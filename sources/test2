@@ -1,0 +1,39 @@
+#include "linux/kernel.h"
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+#include "arch/x86/include/generated/uapi/asm/unistd_64.h"
+
+int main(int argc, char** argv) {
+  char *in = "one.";
+  char *in2 = "two.";
+  char *in3 = "three.";
+  char msg[50];
+  int msglen;
+
+
+  printf("tests order of output from the stack\n");
+  printf("The elements are put on the stack in the order:\n");
+
+  printf("%s\n", in);
+  printf("%s\n", in2);
+  printf("%s\n", in3);
+
+  syscall(__NR_dm510_msgbox_put,in,strlen(in)+1);
+
+  syscall(__NR_dm510_msgbox_put,in2,strlen(in)+1);
+
+  syscall(__NR_dm510_msgbox_put,in3,strlen(in)+1);
+
+  printf("The elements are removed from the stack in the order:\n");
+  /* Read a message */
+  syscall(__NR_dm510_msgbox_get, msg, 50);
+  printf("%s\n",msg);
+
+  syscall(__NR_dm510_msgbox_get, msg, 50);
+  printf("%s\n",msg);
+
+  syscall(__NR_dm510_msgbox_get, msg, 50);
+  printf("%s\n",msg);
+  return 0;
+}
