@@ -1,0 +1,3 @@
+454  common  hellokernel      sys_hellokernel
+455  common  dm510_msgbox_get	sys_dm510_msgbox_get
+456  common  dm510_msgbox_put	sys_dm510_msgbox_put
