@@ -94,7 +94,7 @@ class Salesman extends Employee {
             const stockIndex = stockInventory.findIndex(stock => stock[0] === item[0]);
             const stockItem = stockInventory[stockIndex];
             if (!stockItem) {
-                //console.error(`Item ${item[0]} is not in stock.`);
+                console.error(`Item ${item[0]} is not in stock.`);
                 return `Item ${item[0]} is not in stock.`;
             }
             if (stockItem[1] < item[1]) {
@@ -318,8 +318,9 @@ function createOrder(items, customerID, salesmanID, price) {
 }
 
 
-/**
- * REST OF FILE IS FOR MAIN PAGE CONTROLS
+/** --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * Magic numbers for setup and storage of data
+ * --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  */
 var orderCounter = 0;
 var orderList = [];
@@ -332,75 +333,40 @@ var minimumThreshHold = 10;
 var loggedIN;
 var createOrderItems = [];
 
-
-
-
-
-
-/**
- * Function for getting a new unused order ID
- * @returns {number} The new ID
+/** --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * Testing logic, for testing purposes
+ * --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  */
-function newOrderID() {
-    orderCounter = orderCounter + 1;
-    return orderCounter -1;
-}
 
-/**
- * Function for getting a new unused employee ID
- * @returns {number} the new ID
- */
-function newEmployeeID() {
-    employeeCounter = employeeCounter + 1;
-    return employeeCounter - 1;
-}
-
-/**
- * Function for getting a new unused employee ID
- * @returns {number} the new ID
- */
-function newCustomerID() {
-    customerCounter = customerCounter + 1;
-    return customerCounter - 1;
-}
-
-// test data
 employeeList[0] = new Admin("admin", "admin");
-    var admin = employeeList[0];
-    admin.addHandler("test_handler", "test");
-    admin.addSalesman("test_salesman", "test");
-    admin.addCustomer("test_customer", "test_address", employeeList[2].name);
-    admin.addCustomer("test_customer2", "test_address2", employeeList[2].name);
+
+var admin = employeeList[0];
+admin.addHandler("test_handler", "test");
+admin.addSalesman("test_salesman", "test");
+admin.addCustomer("test_customer", "test_address", employeeList[2].name);
+admin.addCustomer("test_customer2", "test_address2", employeeList[2].name);
 
 
-    var handler = employeeList[1];
-    handler.addStock([[1, 500], [27, 30], [13, 10], [10, 50]]);
+var handler = employeeList[1];
+handler.addStock([[1, 500], [27, 30], [13, 10], [10, 50]]);
 
-    var salesman = employeeList[2];
-    salesman.addOrder([[1, 1]], 123, 100);
-    salesman.addOrder([[13, 1], [10, 19]], 0, 140);
-    salesman.addOrder([[13, 1], [10, 19]], 1, 0);
-// end
+var salesman = employeeList[2];
+salesman.addOrder([[1, 1]], 0, 100);
+salesman.addOrder([[13, 1], [10, 19]], 0, 140);
+salesman.addOrder([[13, 1], [10, 19]], 1, 0);
 
-function login() {
 
-    orderList[0].status = "handled";
+orderList[0].status = "handled";
 
-    var ID = document.getElementById("username").value;
-    var password = document.getElementById("password").value;
-    if (authenticateEmployee(ID, password)) {
-        loggedIN = employeeList[ID];
-        updateHomePaneButtonVisibility();
-        changePane("HomePane");
-    } else {
-        alert("invalid Login")
-        //TODO: write something about invalid login
-    }
-}
 
-function authenticateEmployee(ID, password) {
-    return ( employeeList[ID].password == password);
-}
+
+
+
+
+/**--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * HTML page controls
+ * --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ */
 
 function changePane(cssID){
     for (let elem of document.getElementsByClassName("pane")) {
@@ -413,6 +379,16 @@ function changePane(cssID){
         if (elem.type != "radio") {elem.value = ""}
     }
     document.getElementById(cssID).hidden = false;
+}
+
+function changeDropDown(cssID) {
+    for (let elem of document.getElementsByClassName("dropDown")) {
+        if (elem.id !== cssID) {
+            elem.hidden = true;
+        }
+    }
+    var elem = document.getElementById(cssID);
+    elem.hidden = !elem.hidden;
 }
 
 function updateHomePaneButtonVisibility()  {
@@ -438,17 +414,6 @@ function updateHomePaneButtonVisibility()  {
         document.getElementById("perms").innerText = "Admin";
     }
     
-}
-
-
-
-function itemlistToString(order) {
-    result = "";
-    result += "<ul>";
-    for (let elem of order.items) {
-        result += "<li>" + "ItemID: " + elem[0] + ", Count: "+ elem[1];
-    }
-    return result;
 }
 
 function showOrdersInList(orders, listname) {
@@ -519,6 +484,45 @@ function showCustomers() {
     }
 }
 
+function updateHandleOrderList() {
+    var list = document.getElementById("HandleOrderList");
+    list.innerHTML = "";
+    for (let elem of orderList.filter(order => {return order.status == "unhandled"})) {
+        list.innerHTML += "<dt>" + "ID: " + elem.orderID;
+        list.innerHTML += "<dd>" + "status: " + elem.status;
+        list.innerHTML += "<dd>" + "<button onclick='handleOrder(" + elem.orderID +")'> Handle Order"
+    }
+}
+
+function createOrderUpdateList() {
+    var list = document.getElementById("CreateOrderItemList");
+    list.innerHTML = "";
+    createOrderItems.sort(function(a,b){return a[0]-b[0]});
+    for (var index in createOrderItems) {
+        list.innerHTML += "<dt>" + "Item ID: " + createOrderItems[index][0];
+        list.innerHTML += "<dd>" + "Amount: " + createOrderItems[index][1];
+        list.innerHTML += "<dd>" + "<button onclick='createOrderRemoveItem(" + createOrderItems[index][0] +")'> Remove from order"
+    }   
+}
+
+/**--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * User Controls
+ * --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ */
+
+function login() {
+    var ID = document.getElementById("username").value;
+    var password = document.getElementById("password").value;
+    if (authenticateEmployee(ID, password)) {
+        loggedIN = employeeList[ID];
+        updateHomePaneButtonVisibility();
+        changePane("HomePane");
+    } else {
+        alert("invalid Login")
+        //TODO: write something about invalid login
+    }
+}
+
 function homePaneButton(action) {
     switch (action) {
         case "FindOrder":
@@ -530,7 +534,7 @@ function homePaneButton(action) {
             break;
         case "ViewUnhandled":
             changeDropDown("dropDownUnhandledOrders");
-            showOrdersInList(orderList.filter(order => {return order.status == "unhandled"}), "UnhandleOrderList");
+            showOrdersInList(loggedIN.viewUnhandledOrders(), "UnhandleOrderList");
             break;
         case "AddStock":
             changeDropDown("dropDownAddStock");
@@ -540,7 +544,7 @@ function homePaneButton(action) {
             break;
         case "ViewOwnOrders":
             changeDropDown("dropDownViewOwnOrders");
-            showOrdersInList(orderList.filter(order => {return order.salesmanID == loggedIN.employeeID}), "OwnOrderList");
+            showOrdersInList(loggedIN.viewOwnOrders(), "OwnOrderList");
             break;
         case "ViewStock":
             var list = document.getElementById("StockList");
@@ -578,24 +582,13 @@ function FindOrderButton() {
     }
 }
 
-function updateHandleOrderList() {
-    var list = document.getElementById("HandleOrderList");
-    list.innerHTML = "";
-    for (let elem of orderList.filter(order => {return order.status == "unhandled"})) {
-        list.innerHTML += "<dt>" + "ID: " + elem.orderID;
-        list.innerHTML += "<dd>" + "status: " + elem.status;
-        list.innerHTML += "<dd>" + "<button onclick='handleOrder(" + elem.orderID +")'> Handle Order"
-    }
-}
-
-function changeDropDown(cssID) {
-    for (let elem of document.getElementsByClassName("dropDown")) {
-        if (elem.id !== cssID) {
-            elem.hidden = true;
-        }
-    }
-    var elem = document.getElementById(cssID);
-    elem.hidden = !elem.hidden;
+function endHandleOrder(orderID) {
+    loggedIN.endHandleOrder(orderID);
+    var dropdown = document.getElementById("dropDownHandleOrder");
+    dropdown.innerHTML = "";
+    dropdown.innerHTML += "<h1>Unhandled Orders:";
+    dropdown.innerHTML += "<dl id='HandleOrderList'>";
+    updateHandleOrderList();
 }
 
 function handleOrder(orderID) {
@@ -612,15 +605,6 @@ function handleOrder(orderID) {
     dropdown.innerHTML += "<br> <br>"
 }
 
-function endHandleOrder(orderID) {
-    loggedIN.endHandleOrder(orderID);
-    var dropdown = document.getElementById("dropDownHandleOrder");
-    dropdown.innerHTML = "";
-    dropdown.innerHTML += "<h1>Unhandled Orders:";
-    dropdown.innerHTML += "<dl id='HandleOrderList'>";
-    updateHandleOrderList();
-}
-
 function addStockAction() {
     var ID = document.getElementById("AddStockItemID").value;
     var amount = document.getElementById("AddStockAmount").value;
@@ -631,22 +615,6 @@ function addStockAction() {
     } else {
         alert("Please make sure you have entered all neccessary information");
     }
-
-}
-
-function addToItemList(items, list) {
-    items.forEach((item) => {
-        //for every item to add to list
-        if (list.some(item2 => {
-                return item[0] == item2[0];
-            })) {
-            //if the item ID already exists in list, add amount to item already in list
-            list[list.findIndex(item2 => {return item2[0] == item[0]})][1] += Number(item[1]);
-        } else {
-            //if the item ID does not exist in list, push item to list
-            list.push([Number(item[0]), Number(item[1])]);
-        }
-    });
 }
 
 function createOrderAddItem() {
@@ -666,17 +634,6 @@ function createOrderAddItem() {
 function createOrderRemoveItem(itemID) {
     createOrderItems = createOrderItems.filter(item => {return item[0] != itemID});
     createOrderUpdateList();
-}
-
-function createOrderUpdateList() {
-    var list = document.getElementById("CreateOrderItemList");
-    list.innerHTML = "";
-    createOrderItems.sort(function(a,b){return a[0]-b[0]});
-    for (var index in createOrderItems) {
-        list.innerHTML += "<dt>" + "Item ID: " + createOrderItems[index][0];
-        list.innerHTML += "<dd>" + "Amount: " + createOrderItems[index][1];
-        list.innerHTML += "<dd>" + "<button onclick='createOrderRemoveItem(" + createOrderItems[index][0] +")'> Remove from order"
-    }   
 }
 
 function createOrderButton() {
@@ -744,4 +701,62 @@ function addEmployeeButton() {
         alert("Please make sure you have entered all neccessary information");
     }
 }
-module.exports = { Admin, Salesman, Handler };
+/**--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ * Internal logic
+ * --------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ */
+
+function authenticateEmployee(ID, password) {
+    return ( employeeList[ID].password == password);
+}
+
+function itemlistToString(order) {
+    result = "";
+    result += "<ul>";
+    for (let elem of order.items) {
+        result += "<li>" + "ItemID: " + elem[0] + ", Count: "+ elem[1];
+    }
+    return result;
+}
+
+function addToItemList(items, list) {
+    items.forEach((item) => {
+        //for every item to add to list
+        if (list.some(item2 => {
+                return item[0] == item2[0];
+            })) {
+            //if the item ID already exists in list, add amount to item already in list
+            list[list.findIndex(item2 => {return item2[0] == item[0]})][1] += Number(item[1]);
+        } else {
+            //if the item ID does not exist in list, push item to list
+            list.push([Number(item[0]), Number(item[1])]);
+        }
+    });
+}
+
+/**
+ * Function for getting a new unused order ID
+ * @returns {number} The new ID
+ */
+function newOrderID() {
+    orderCounter = orderCounter + 1;
+    return orderCounter -1;
+}
+
+/**
+ * Function for getting a new unused employee ID
+ * @returns {number} the new ID
+ */
+function newEmployeeID() {
+    employeeCounter = employeeCounter + 1;
+    return employeeCounter - 1;
+}
+
+/**
+ * Function for getting a new unused employee ID
+ * @returns {number} the new ID
+ */
+function newCustomerID() {
+    customerCounter = customerCounter + 1;
+    return customerCounter - 1;
+}
